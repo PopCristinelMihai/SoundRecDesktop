@@ -1,3 +1,5 @@
+import com.opencsv.CSVWriter;
+import com.opencsv.bean.OpencsvUtils;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 
@@ -5,9 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
+import java.util.Arrays;
 
 public class FFTActivity extends JFrame{
 
@@ -26,22 +27,30 @@ public class FFTActivity extends JFrame{
             public void actionPerformed(ActionEvent actionEvent) {
                 //JFrame frame=new FFTActivity("Hallo");
                 //frame.setVisible(true);
-                FFTQ();
-                String[] text=FFTQ();
-                System.out.println("De aici intra ala");
+                //String[] text=FFTQ();
+                try {
+                    writeCSV();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                //System.out.println("De aici intra ala");
                 //double[] arrayMofo=(FFTQ());
                 //for(int m=0;m<arrayMofo.length;m++)
                 //{
                 //    System.out.println(Math.abs(arrayMofo[m]));
                 //}
-                System.out.println(text[0]);
-                System.out.println(text[1]);
-                System.out.println(text[2]);
-                System.out.println(text[3]);
-                System.out.println(text[4]);
-                System.out.println(text[5]);
-                Format1.setText("FORMAT1 "+text[0]);
-                Format2.setText("FORMAT2 "+text[1]);
+                //System.out.println(text[0]);
+                //System.out.println(text[1]);
+                //System.out.println(text[2]);
+                //System.out.println(text[3]);
+                //System.out.println(text[4]);
+                //System.out.println(text[5]);
+                //Format1.setText("FORMAT1 "+text[0]);
+                //Format2.setText("FORMAT2 "+text[1]);
+                //for(int ind=0;ind<text.length;ind++)
+                //System.out.println(text[ind]);
+
+
             }
         });
 
@@ -49,7 +58,7 @@ public class FFTActivity extends JFrame{
     }
 
 
-    public String[] FFTQ()
+    public double[] FFTQ(String fileLoc)
     {
 
     final String TAG ="";
@@ -65,21 +74,17 @@ public class FFTActivity extends JFrame{
      long myByteRate;
      int myBlockAlign;
      int myBitsPerSample;
-     double[] imag;
-     String[] arrayR = new String[7];
-    //private long myDataSize;
-
+     double[] arrayR = new double[4096];
+    File fileIn;
     //AudioInputStream audioInputStream;
     ApacheFFT apacheFFT=new ApacheFFT();
-    int totalFramesRead=0;
-    File fileIn = new File("E:"+"/"+"FisiereLicenta"+"/"+"test.wav");
+    fileIn = new File(fileLoc);
     DataInputStream inFile=null;
      byte[] myData;
     // private long myChunkSize;
 
     WindowFunction w = new HanningWindow();
 
-        //wavIo wave= readWavBytes();
         byte[] tmpLong=new byte[4];
         byte[] tmpInt = new byte[2];
     try {
@@ -96,9 +101,9 @@ public class FFTActivity extends JFrame{
 
         // print what we've read so far
         //System.out.println("chunkID:" + chunkID + " chunk1Size:" + myChunkSize + " format:" + format); // for debugging only
-        System.out.println("==========================================");
+        //System.out.println("==========================================");
 
-        System.out.println("chunkID:" + chunkID + " chunk1Size:" + myChunkSize + " format:" + format);
+        //System.out.println("chunkID:" + chunkID + " chunk1Size:" + myChunkSize + " format:" + format);
 
 
         String subChunk1ID = "" + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte();
@@ -106,7 +111,7 @@ public class FFTActivity extends JFrame{
         inFile.read(tmpLong); // read the SubChunk1Size
         mySubChunk1Size = byteArrayToLong(tmpLong);
 
-        System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASTA este SUBCHUNKSIZE");
+        //System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASTA este SUBCHUNKSIZE");
         inFile.read(tmpInt); // read the audio format.  This should be 1 for PCM
         myFormat = byteArrayToInt(tmpInt);
 
@@ -127,7 +132,7 @@ public class FFTActivity extends JFrame{
 
 
         // print what we've read so far
-        System.out.println("SubChunk1ID:" + subChunk1ID + " SubChunk1Size:" + mySubChunk1Size + " AudioFormat:" + myFormat + " Channels:" + myChannels + " SampleRate:" + mySampleRate);
+        //System.out.println("SubChunk1ID:" + subChunk1ID + " SubChunk1Size:" + mySubChunk1Size + " AudioFormat:" + myFormat + " Channels:" + myChannels + " SampleRate:" + mySampleRate);
 
 
         // read the data chunk header - reading this IS necessary, because not all wav files will have the data chunk here - for now, we're just assuming that the data chunk is here
@@ -137,7 +142,7 @@ public class FFTActivity extends JFrame{
         myDataSize = byteArrayToLong(tmpLong);
 
 
-        System.out.println("MYYYYYY DAAAAAAAAAAATAAAAAA SIIIIIIZE ISSSSSS   " + myDataSize);
+        //System.out.println("MYYYYYY DAAAAAAAAAAATAAAAAA SIIIIIIZE ISSSSSS   " + myDataSize);
         // read the data chunk
         myData = new byte[(int)myDataSize];
         //inFile.read(myData);
@@ -186,24 +191,31 @@ public class FFTActivity extends JFrame{
             array[i] = (10 * Math.log10(Math.abs(freq[i])));
         }
 
-        for (int i = 0; i < array.length; i++)
-            System.out.println("ASTEA SUNT FRECVENTELE" + Math.abs(array[i]));
+        //for (int i = 0; i < array.length; i++)
+        //    System.out.println("ASTEA SUNT FRECVENTELE" + Math.abs(array[i]));
 
-        System.out.println("MARIMEA LA FRECVENTE" + freq.length);
+        //System.out.println("MARIMEA LA FRECVENTE" + freq.length);
 
         //getSampleRate(mySampleRate);
 
 
-        arrayR[0]=chunkID;
-        arrayR[1]=format;
-        arrayR[2]=subChunk1ID;
-        arrayR[3]=Long.toString(mySubChunk1Size);
-        arrayR[4]=Long.toString(myChannels);
-        arrayR[5]=Long.toString(mySampleRate);
+        //arrayR[0]=chunkID;
+        //arrayR[1]=format;
+        //arrayR[2]=subChunk1ID;
+        //arrayR[3]=Long.toString(mySubChunk1Size);
+        //arrayR[4]=Long.toString(myChannels);
+        //arrayR[5]=Long.toString(mySampleRate);
+        for(int ind=0;ind<arrayR.length;ind++)
+        {
+            arrayR[ind]=Math.abs(array[ind]);
+        }
         //System.out.println("AIIIIIIIIIIIIIIIIIIICIIIIIIIIIIII SE AFLA ============================== CHUNK ID");
     } catch (Exception e) {
         System.out.println(e.getMessage());
     }
+
+    //for(int ind=0;ind<arrayR.length;ind++)
+      //System.out.println(arrayR[ind]);
         return arrayR;
     }
     public static void main(String[] args)
@@ -214,6 +226,38 @@ public class FFTActivity extends JFrame{
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
+    }
+
+    public void writeCSV() throws IOException {
+        CSVWriter writer=new CSVWriter(new FileWriter("E:/FisiereLicenta/data.csv"));
+        File folder = new File("E:/FisiereLicenta/SuneteAplicatie");
+        File[] listOfFiles=folder.listFiles();
+
+        double[] showArray=new double[4096];
+        for(int i = 0; i<listOfFiles.length; i++)
+        {
+
+            if(listOfFiles[i].isFile())
+            {
+                
+                System.out.println("File "+ listOfFiles[i].getPath());
+                showArray=FFTQ(listOfFiles[i].getPath());
+
+                for(int ind=0;ind<showArray.length;ind++) {
+                    System.out.println(showArray[ind]);
+
+                }
+            }else if (listOfFiles[i].isDirectory()){
+                System.out.println("Directory" + listOfFiles[i].getPath());
+            }
+
+           String[] strarr=new String[]{Arrays.toString(showArray)};
+            writer.writeNext(strarr);
+            writer.writeNext(new String[]{listOfFiles[i].getName()});
+
+        }
+
+        writer.close();
     }
 
 
@@ -251,8 +295,5 @@ public class FFTActivity extends JFrame{
         return accum;
     }
 
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
-    }
 }
 
