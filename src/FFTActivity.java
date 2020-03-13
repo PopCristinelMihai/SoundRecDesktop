@@ -1,5 +1,6 @@
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.OpencsvUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 
@@ -9,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 
 public class FFTActivity extends JFrame{
 
@@ -232,31 +235,22 @@ public class FFTActivity extends JFrame{
         CSVWriter writer=new CSVWriter(new FileWriter("E:/FisiereLicenta/data.csv"));
         File folder = new File("E:/FisiereLicenta/SuneteAplicatie");
         File[] listOfFiles=folder.listFiles();
+        //String directory="E:/FisiereLicenta/SuneteAplicatie";
+        //String fileName="WOOD1.wav";
 
         double[] showArray=new double[4096];
-        for(int i = 0; i<listOfFiles.length; i++)
-        {
+      try {
+          Collection files = FileUtils.listFiles(folder, new String[]{"wav"}, true);
 
-            if(listOfFiles[i].isFile())
-            {
-                
-                System.out.println("File "+ listOfFiles[i].getPath());
-                showArray=FFTQ(listOfFiles[i].getPath());
+          for (Iterator iterator = files.iterator(); iterator.hasNext(); ) {
+              File file = (File) iterator.next();
+             System.out.println(file.getAbsolutePath());
 
-                for(int ind=0;ind<showArray.length;ind++) {
-                    System.out.println(showArray[ind]);
-
-                }
-            }else if (listOfFiles[i].isDirectory()){
-                System.out.println("Directory" + listOfFiles[i].getPath());
-            }
-
-           String[] strarr=new String[]{Arrays.toString(showArray)};
-            writer.writeNext(strarr);
-            writer.writeNext(new String[]{listOfFiles[i].getName()});
-
-        }
-
+          }
+      }catch(Exception e){
+          e.printStackTrace();
+      }
+        //System.out.println(files);
         writer.close();
     }
 
