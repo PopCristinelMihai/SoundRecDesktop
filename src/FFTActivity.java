@@ -244,7 +244,7 @@ public class FFTActivity extends JFrame{
         //String fileName="WOOD1.wav";
 
         double[] showArray=new double[4096];
-        writer.writeNext(new String[]{"values","label"});
+        writer.writeNext(new String[]{"label","values"});
       try {
           Collection files = FileUtils.listFiles(folder, new String[]{"wav"}, true);
 
@@ -254,9 +254,9 @@ public class FFTActivity extends JFrame{
 
               double[] showarray = FFTQ(file.getAbsolutePath());
 
-              String[] strarr = new String[]{Arrays.toString(showarray)};
+              String[] strarr = new String[]{file.getName(),Arrays.toString(showarray)};
               writer.writeNext(strarr);
-              writer.writeNext(new String[]{file.getName()});
+              //writer.writeNext(new String[]{file.getName()});
           }
       }catch(Exception e){
           e.printStackTrace();
