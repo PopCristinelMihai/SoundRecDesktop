@@ -192,6 +192,8 @@ public class FFTActivity extends JFrame{
         double[] array = new double[freq.length];
         for (int i = 0; i < freq.length; i++) {
             array[i] = (10 * Math.log10(Math.abs(freq[i])));
+            //if(array[i]<0)
+                //array[i]=0;
         }
 
         //for (int i = 0; i < array.length; i++)
@@ -210,7 +212,10 @@ public class FFTActivity extends JFrame{
         //arrayR[5]=Long.toString(mySampleRate);
         for(int ind=0;ind<arrayR.length;ind++)
         {
-            arrayR[ind]=Math.abs(array[ind]);
+            if(arrayR[ind]<0)
+                arrayR[ind]=0;
+            else
+                arrayR[ind]=Math.abs(array[ind]);
         }
         //System.out.println("AIIIIIIIIIIIIIIIIIIICIIIIIIIIIIII SE AFLA ============================== CHUNK ID");
     } catch (Exception e) {
@@ -239,6 +244,7 @@ public class FFTActivity extends JFrame{
         //String fileName="WOOD1.wav";
 
         double[] showArray=new double[4096];
+        writer.writeNext(new String[]{"values","label"});
       try {
           Collection files = FileUtils.listFiles(folder, new String[]{"wav"}, true);
 
@@ -246,6 +252,11 @@ public class FFTActivity extends JFrame{
               File file = (File) iterator.next();
              System.out.println(file.getAbsolutePath());
 
+              double[] showarray = FFTQ(file.getAbsolutePath());
+
+              String[] strarr = new String[]{Arrays.toString(showarray)};
+              writer.writeNext(strarr);
+              writer.writeNext(new String[]{file.getName()});
           }
       }catch(Exception e){
           e.printStackTrace();
