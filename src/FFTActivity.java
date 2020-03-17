@@ -61,170 +61,166 @@ public class FFTActivity extends JFrame{
     }
 
 
-    public double[] FFTQ(String fileLoc)
-    {
+    public double[] FFTQ(String fileLoc) {
 
-    final String TAG ="";
-    FastFourierTransformer fft;
-    long myDataSize;
-     Complex fftArray;
-     String myPath;
-     long myChunkSize;
-     long mySubChunk1Size;
-     int myFormat;
-     long myChannels;
-     long mySampleRate;
-     long myByteRate;
-     int myBlockAlign;
-     int myBitsPerSample;
-     double[] arrayR = new double[4096];
-    File fileIn;
-    //AudioInputStream audioInputStream;
-    ApacheFFT apacheFFT=new ApacheFFT();
-    fileIn = new File(fileLoc);
-    DataInputStream inFile=null;
-     byte[] myData;
-    // private long myChunkSize;
+        final String TAG = "";
+        FastFourierTransformer fft;
+        long myDataSize;
+        Complex fftArray;
+        String myPath;
+        long myChunkSize;
+        long mySubChunk1Size;
+        int myFormat;
+        long myChannels;
+        long mySampleRate;
+        long myByteRate;
+        int myBlockAlign;
+        int myBitsPerSample;
+        double[] arrayR = new double[2048];
+        File fileIn;
+        //AudioInputStream audioInputStream;
+        ApacheFFT apacheFFT = new ApacheFFT();
+        fileIn = new File(fileLoc);
+        DataInputStream inFile = null;
+        byte[] myData;
+        // private long myChunkSize;
 
-    WindowFunction w = new HanningWindow();
+        WindowFunction w = new HanningWindow();
 
-        byte[] tmpLong=new byte[4];
+        byte[] tmpLong = new byte[4];
         byte[] tmpInt = new byte[2];
-    try {
-        inFile = new DataInputStream(new FileInputStream(fileIn));
+        try {
+            inFile = new DataInputStream(new FileInputStream(fileIn));
 
 
-        String chunkID = "" + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte();
+            String chunkID = "" + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte();
 
 
-        inFile.read(tmpLong); // read the ChunkSize
-        myChunkSize = byteArrayToLong(tmpLong);
+            inFile.read(tmpLong); // read the ChunkSize
+            myChunkSize = byteArrayToLong(tmpLong);
 
-        String format = "" + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte();
+            String format = "" + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte();
 
-        // print what we've read so far
-        //System.out.println("chunkID:" + chunkID + " chunk1Size:" + myChunkSize + " format:" + format); // for debugging only
-        //System.out.println("==========================================");
+            // print what we've read so far
+            //System.out.println("chunkID:" + chunkID + " chunk1Size:" + myChunkSize + " format:" + format); // for debugging only
+            //System.out.println("==========================================");
 
-        //System.out.println("chunkID:" + chunkID + " chunk1Size:" + myChunkSize + " format:" + format);
-
-
-        String subChunk1ID = "" + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte();
-
-        inFile.read(tmpLong); // read the SubChunk1Size
-        mySubChunk1Size = byteArrayToLong(tmpLong);
-
-        //System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASTA este SUBCHUNKSIZE");
-        inFile.read(tmpInt); // read the audio format.  This should be 1 for PCM
-        myFormat = byteArrayToInt(tmpInt);
-
-        inFile.read(tmpInt); // read the # of channels (1 or 2)
-        myChannels = byteArrayToInt(tmpInt);
-
-        inFile.read(tmpLong); // read the samplerate
-        mySampleRate = byteArrayToLong(tmpLong);
-
-        inFile.read(tmpLong); // read the byterate
-        myByteRate = byteArrayToLong(tmpLong);
-
-        inFile.read(tmpInt); // read the blockalign
-        myBlockAlign = byteArrayToInt(tmpInt);
-
-        inFile.read(tmpInt); // read the bitspersample
-        myBitsPerSample = byteArrayToInt(tmpInt);
+            //System.out.println("chunkID:" + chunkID + " chunk1Size:" + myChunkSize + " format:" + format);
 
 
-        // print what we've read so far
-        //System.out.println("SubChunk1ID:" + subChunk1ID + " SubChunk1Size:" + mySubChunk1Size + " AudioFormat:" + myFormat + " Channels:" + myChannels + " SampleRate:" + mySampleRate);
+            String subChunk1ID = "" + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte();
+
+            inFile.read(tmpLong); // read the SubChunk1Size
+            mySubChunk1Size = byteArrayToLong(tmpLong);
+
+            //System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASTA este SUBCHUNKSIZE");
+            inFile.read(tmpInt); // read the audio format.  This should be 1 for PCM
+            myFormat = byteArrayToInt(tmpInt);
+
+            inFile.read(tmpInt); // read the # of channels (1 or 2)
+            myChannels = byteArrayToInt(tmpInt);
+
+            inFile.read(tmpLong); // read the samplerate
+            mySampleRate = byteArrayToLong(tmpLong);
+
+            inFile.read(tmpLong); // read the byterate
+            myByteRate = byteArrayToLong(tmpLong);
+
+            inFile.read(tmpInt); // read the blockalign
+            myBlockAlign = byteArrayToInt(tmpInt);
+
+            inFile.read(tmpInt); // read the bitspersample
+            myBitsPerSample = byteArrayToInt(tmpInt);
 
 
-        // read the data chunk header - reading this IS necessary, because not all wav files will have the data chunk here - for now, we're just assuming that the data chunk is here
-        String dataChunkID = "" + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte();
-
-        inFile.read(tmpLong); // read the size of the data
-        myDataSize = byteArrayToLong(tmpLong);
+            // print what we've read so far
+            //System.out.println("SubChunk1ID:" + subChunk1ID + " SubChunk1Size:" + mySubChunk1Size + " AudioFormat:" + myFormat + " Channels:" + myChannels + " SampleRate:" + mySampleRate);
 
 
-        //System.out.println("MYYYYYY DAAAAAAAAAAATAAAAAA SIIIIIIZE ISSSSSS   " + myDataSize);
-        // read the data chunk
-        myData = new byte[(int)myDataSize];
-        //inFile.read(myData);
+            // read the data chunk header - reading this IS necessary, because not all wav files will have the data chunk here - for now, we're just assuming that the data chunk is here
+            String dataChunkID = "" + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte() + (char) inFile.readByte();
+
+            inFile.read(tmpLong); // read the size of the data
+            myDataSize = byteArrayToLong(tmpLong);
 
 
-        double[] dataNew = new double[(int) myDataSize / 2];
-        myData = new byte[(int) myDataSize];
-        for (int i = 0; i < myDataSize / 2; i++) {
-            short val = (short) ((inFile.readByte() & 0xFF) | (inFile.readByte() & 0xFF) << 8);
-            dataNew[i] = (double) val;
-        }
+            //System.out.println("MYYYYYY DAAAAAAAAAAATAAAAAA SIIIIIIZE ISSSSSS   " + myDataSize);
+            // read the data chunk
+            myData = new byte[(int) myDataSize];
+            //inFile.read(myData);
+
+
+            double[] dataNew = new double[(int) myDataSize / 2];
+            myData = new byte[(int) myDataSize];
+            for (int i = 0; i < myDataSize / 2; i++) {
+                short val = (short) ((inFile.readByte() & 0xFF) | (inFile.readByte() & 0xFF) << 8);
+                dataNew[i] = (double) val;
+            }
         /*for (int j = 0; j < dataNew.length; j++) {
             System.out.println("MY DATA IS HERE" + dataNew[j]);
         }*/
 
-        //System.out.println("ASTA E DIMENSIUNEA DATELOR " + myDataSize);
-        //System.out.println("ASTA E DIMENSIUNEA LA DATA PRELEVATA" + dataNew.length);
+            //System.out.println("ASTA E DIMENSIUNEA DATELOR " + myDataSize);
+            //System.out.println("ASTA E DIMENSIUNEA LA DATA PRELEVATA" + dataNew.length);
 
-        double valMax = 0;
-        int indexMax = 0;
+            double valMax = 0;
+            int indexMax = 0;
 
-        int indexInterest = 0;
+            int indexInterest = 0;
 
-        for (int q = 0; q < dataNew.length; q++) {
-            if (dataNew[q] > valMax) {
-                valMax = dataNew[q];
-                indexMax = q;
+            for (int q = 0; q < dataNew.length; q++) {
+                if (dataNew[q] > valMax) {
+                    valMax = dataNew[q];
+                    indexMax = q;
+                }
+
             }
 
-        }
+            double[] arrayInterest = new double[dataNew.length - indexMax];
 
-        double[] arrayInterest = new double[dataNew.length - indexMax];
-
-        while (dataNew[indexMax] > valMax * 0.1) {
-            arrayInterest[indexInterest] = dataNew[indexMax];
-            indexMax++;
-            indexInterest++;
-        }
+            while (dataNew[indexMax] > valMax * 0.1) {
+                arrayInterest[indexInterest] = dataNew[indexMax];
+                indexMax++;
+                indexInterest++;
+            }
 
 
-        apacheFFT.forward(arrayInterest, (float) 44100, w);
-        Spectrum s = apacheFFT.getMagnitudeSpectrum();
-        double[] freq = s.array();
-        double[] array = new double[freq.length];
-        for (int i = 0; i < freq.length; i++) {
-            array[i] = (10 * Math.log10(Math.abs(freq[i])));
-            //if(array[i]<0)
+            apacheFFT.forward(dataNew, (float) 44100, w);
+            Spectrum s = apacheFFT.getMagnitudeSpectrum();
+            double[] freq = s.array();
+            double[] array = new double[freq.length];
+            for (int i = 0; i < freq.length; i++) {
+                array[i] = freq[i];
+                //if(array[i]<0)
                 //array[i]=0;
+            }
+
+            //for (int i = 0; i < array.length; i++)
+            //    System.out.println("ASTEA SUNT FRECVENTELE" + Math.abs(array[i]));
+
+            //System.out.println("MARIMEA LA FRECVENTE" + freq.length);
+
+            //getSampleRate(mySampleRate);
+
+
+            //arrayR[0]=chunkID;
+            //arrayR[1]=format;
+            //arrayR[2]=subChunk1ID;
+            //arrayR[3]=Long.toString(mySubChunk1Size);
+            //arrayR[4]=Long.toString(myChannels);
+            //arrayR[5]=Long.toString(mySampleRate);
+            for (int ind = 0; ind < arrayR.length; ind++) {
+                arrayR[ind] = array[ind]*100;
+            }
+
+            //System.out.println("AIIIIIIIIIIIIIIIIIIICIIIIIIIIIIII SE AFLA ============================== CHUNK ID");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
-
-        //for (int i = 0; i < array.length; i++)
-        //    System.out.println("ASTEA SUNT FRECVENTELE" + Math.abs(array[i]));
-
-        //System.out.println("MARIMEA LA FRECVENTE" + freq.length);
-
-        //getSampleRate(mySampleRate);
-
-
-        //arrayR[0]=chunkID;
-        //arrayR[1]=format;
-        //arrayR[2]=subChunk1ID;
-        //arrayR[3]=Long.toString(mySubChunk1Size);
-        //arrayR[4]=Long.toString(myChannels);
-        //arrayR[5]=Long.toString(mySampleRate);
-        for(int ind=0;ind<arrayR.length;ind++)
-        {
-            if(arrayR[ind]<0)
-                arrayR[ind]=0;
-            else
-                arrayR[ind]=Math.abs(array[ind]);
-        }
-        //System.out.println("AIIIIIIIIIIIIIIIIIIICIIIIIIIIIIII SE AFLA ============================== CHUNK ID");
-    } catch (Exception e) {
-        System.out.println(e.getMessage());
-    }
-
-    //for(int ind=0;ind<arrayR.length;ind++)
-      //System.out.println(arrayR[ind]);
         return arrayR;
+        //for(int ind=0;ind<arrayR.length;ind++)
+        //System.out.println(arrayR[ind]);
+
     }
     public static void main(String[] args)
     {
@@ -237,13 +233,13 @@ public class FFTActivity extends JFrame{
     }
 
     public void writeCSV() throws IOException {
-        CSVWriter writer=new CSVWriter(new FileWriter("E:/FisiereLicenta/data.csv"));
+        CSVWriter writer=new CSVWriter(new FileWriter("C:/Users/battl/PycharmProjects/SpeechRec/data.csv"));
         File folder = new File("E:/FisiereLicenta/SuneteAplicatie");
         File[] listOfFiles=folder.listFiles();
         //String directory="E:/FisiereLicenta/SuneteAplicatie";
         //String fileName="WOOD1.wav";
 
-        double[] showArray=new double[4096];
+        double[] showArray=new double[2048];
         writer.writeNext(new String[]{"label","values"});
       try {
           Collection files = FileUtils.listFiles(folder, new String[]{"wav"}, true);
@@ -254,7 +250,8 @@ public class FFTActivity extends JFrame{
 
               double[] showarray = FFTQ(file.getAbsolutePath());
 
-              String[] strarr = new String[]{file.getName(),Arrays.toString(showarray)};
+              String[] strarr = new String[]{(file.getName()).replaceAll("[^A-Z]",""),(Arrays.toString(showarray)).replaceAll("[^0-9.,]+","")};
+
               writer.writeNext(strarr);
               //writer.writeNext(new String[]{file.getName()});
           }
