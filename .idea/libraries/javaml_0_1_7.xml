@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="javaml-0.1.7">
+    <CLASSES>
+      <root url="jar://E:/FisiereLicenta/javaml/javaml-0.1.7.jar!/" />
+      <root url="jar://E:/FisiereLicenta/javaml/lib/commons-math-1.2.jar!/" />
+      <root url="jar://E:/FisiereLicenta/javaml/lib/libsvm.jar!/" />
+      <root url="jar://E:/FisiereLicenta/javaml/lib/Jama-1.0.2.jar!/" />
+      <root url="jar://E:/FisiereLicenta/javaml/lib/ajt-2.9.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

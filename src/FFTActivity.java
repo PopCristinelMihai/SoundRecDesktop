@@ -1,5 +1,14 @@
 import com.opencsv.CSVWriter;
+import com.opencsv.ICSVWriter;
 import com.opencsv.bean.OpencsvUtils;
+import net.sf.javaml.classification.Classifier;
+import net.sf.javaml.classification.KNearestNeighbors;
+import net.sf.javaml.classification.evaluation.EvaluateDataset;
+import net.sf.javaml.classification.evaluation.PerformanceMeasure;
+import net.sf.javaml.core.Dataset;
+import net.sf.javaml.core.Instance;
+import net.sf.javaml.tools.Serial;
+import net.sf.javaml.tools.data.FileHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.FastFourierTransformer;
@@ -12,6 +21,7 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 public class FFTActivity extends JFrame{
 
@@ -19,6 +29,7 @@ public class FFTActivity extends JFrame{
     private JButton button1;
     private JLabel Format1;
     private JLabel Format2;
+    private JButton button2;
 
 
     private FFTActivity(String title){
@@ -28,41 +39,35 @@ public class FFTActivity extends JFrame{
         button1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                //JFrame frame=new FFTActivity("Hallo");
-                //frame.setVisible(true);
-                //String[] text=FFTQ();
                 try {
                     writeCSV();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                //System.out.println("De aici intra ala");
-                //double[] arrayMofo=(FFTQ());
-                //for(int m=0;m<arrayMofo.length;m++)
-                //{
-                //    System.out.println(Math.abs(arrayMofo[m]));
-                //}
-                //System.out.println(text[0]);
-                //System.out.println(text[1]);
-                //System.out.println(text[2]);
-                //System.out.println(text[3]);
-                //System.out.println(text[4]);
-                //System.out.println(text[5]);
-                //Format1.setText("FORMAT1 "+text[0]);
-                //Format2.setText("FORMAT2 "+text[1]);
-                //for(int ind=0;ind<text.length;ind++)
-                //System.out.println(text[ind]);
+
+
+
 
 
             }
         });
 
 
+        button2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    trainModel("E:/ObjFreqReq/Data/data.csv");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
 
     public double[] FFTQ(String fileLoc) {
-        double[] arrayR = new double[4096];
+        double[] arrayR = new double[2205];
         try {
 
 
@@ -85,15 +90,10 @@ public class FFTActivity extends JFrame{
             apacheFFT.forward(dataNew, (float) 44100, w);
 
             Spectrum s = apacheFFT.getMagnitudeSpectrum();
-            double[] freq = s.array();
-
-            for (int i = 0; i < freq.length; i++) {
-                freq[i] = 10 * Math.log10(10 * Math.abs(freq[i]));
-            }
-
-            for(int ind=0;ind<arrayR.length;ind++)
+            double[] freq = Binning.ComputeBins(s.array(), 2205, false);
+            for(int ind=0;ind<freq.length;ind++)
             {
-                arrayR[ind]=freq[ind];
+                arrayR[ind]=10*Math.log10(10*Math.abs(freq[ind]));
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -112,14 +112,16 @@ public class FFTActivity extends JFrame{
     }
 
     public void writeCSV() throws IOException {
-        CSVWriter writer=new CSVWriter(new FileWriter("C:/Users/battl/PycharmProjects/SpeechRec/data.csv"));
-        File folder = new File("E:/FisiereLicenta/SuneteAplicatie");
+        //CSVWriter writer=new CSVWriter(new FileWriter("C:/Users/battl/PycharmProjects/SpeechRec/data.csv"),char "'");
+        CSVWriter writer =new CSVWriter(new FileWriter("E:/ObjFreqReq/Data/data.csv"),',',CSVWriter.NO_QUOTE_CHARACTER,CSVWriter.NO_ESCAPE_CHARACTER,CSVWriter.RFC4180_LINE_END);
+        File folder = new File("E:/ObjFreqReq/TrainingSounds");
         File[] listOfFiles=folder.listFiles();
-        //String directory="E:/FisiereLicenta/SuneteAplicatie";
-        //String fileName="WOOD1.wav";
 
-        double[] showArray=new double[2048];
-        writer.writeNext(new String[]{"label","values"});
+        //String[] stringcsv=new String[2206];
+        //stringcsv[2205]="label";
+        //for(int i=0;i<stringcsv.length-1;i++)
+        //       stringcsv[i]="value"+i;
+        //writer.writeNext(stringcsv);
       try {
           Collection files = FileUtils.listFiles(folder, new String[]{"wav"}, true);
 
@@ -129,17 +131,57 @@ public class FFTActivity extends JFrame{
 
               double[] showarray = FFTQ(file.getAbsolutePath());
 
-              String[] strarr = new String[]{(file.getName()).replaceAll("[^A-Z]",""),(Arrays.toString(showarray)).replaceAll("[^0-9.,]+","")};
-
+              String[] strarr = new String[]{(Arrays.toString(showarray)).replaceAll("[^0-9.,]+",""),(file.getName()).replaceAll("[^A-Z]","")};
               writer.writeNext(strarr);
               //writer.writeNext(new String[]{file.getName()});
           }
       }catch(Exception e){
           e.printStackTrace();
       }
+
+
+
+
         //System.out.println(files);
         writer.close();
     }
+
+
+
+    public void trainModel(String filepath) throws IOException {
+        Dataset data = FileHandler.loadDataset(new File(filepath), 2205, ",");
+        Dataset dataForClassification = FileHandler.loadDataset(new File(filepath),2205, ",");
+
+
+        int correct = 0, wrong = 0;
+
+        Classifier knn = new KNearestNeighbors(3);
+        knn.buildClassifier(data);
+
+
+        storeModel("E:/ObjFreqReq/Model/Model.dat",knn);
+
+        Classifier model = loadModel("E:/ObjFreqReq/Model/Model.dat");
+
+        for (Instance inst : dataForClassification) {
+            Object predictedClassValue = model.classify(inst);
+                 Object realClassValue = inst.classValue();
+                if(predictedClassValue.equals(realClassValue))
+                     correct++;
+               else
+                   wrong++;
+
+            }
+            System.out.println("Correct Predictions : "+correct+ "     Wrong Preddictions: " +wrong);
+        Map<Object, PerformanceMeasure> pm = EvaluateDataset.testDataset(knn,dataForClassification);
+        for(Object o : pm.keySet())
+            System.out.println(o + ":  " + pm.get(o).getAccuracy());
+            Format1.setText(String.valueOf(correct));
+            Format2.setText(String.valueOf(wrong));
+
+        }
+
+
 
     public static WavIO readWavBytes(String path){
         WavIO wave = new WavIO(path);
@@ -160,6 +202,15 @@ public class FFTActivity extends JFrame{
         return (int)( high << 8 | low );
     }
 
+    public void storeModel (String filename,Classifier model){
+        Serial.store(model,filename);
+
+    }
+
+    public Classifier loadModel (String fileName){
+        Classifier model = (Classifier) Serial.load(fileName);
+        return model;
+    }
 
 }
 
