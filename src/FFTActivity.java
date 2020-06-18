@@ -30,17 +30,29 @@ public class FFTActivity extends JFrame{
     private JLabel Format1;
     private JLabel Format2;
     private JButton button2;
+    private JLabel Format3;
+    private JLabel Format4;
+    private JLabel Format5;
 
 
     private FFTActivity(String title){
         super(title);
         this.setContentPane(mainPanel);
-
+        Format3.setVisible(false);
+        Format1.setFont(new Font("Serif",Font.PLAIN, 24));
+        Format2.setFont(new Font("Serif",Font.PLAIN, 24));
+        Format3.setFont(new Font("Serif",Font.PLAIN, 24));
+        Format4.setFont(new Font("Serif",Font.PLAIN, 24));
+        Format5.setFont(new Font("Serif",Font.PLAIN, 24));
+        Format5.setVisible(false);
         button1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+
                 try {
                     writeCSV();
+                    Format3.setEnabled(true);
+                    Format3.setVisible(true);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -61,6 +73,8 @@ public class FFTActivity extends JFrame{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                Format5.setForeground(Color.RED);
+                Format5.setVisible(true);
             }
         });
     }
@@ -104,7 +118,7 @@ public class FFTActivity extends JFrame{
     public static void main(String[] args)
     {
         JFrame frame= new FFTActivity("HALO");
-        frame.setPreferredSize(new Dimension(400,300));
+        frame.setPreferredSize(new Dimension(950,600));
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -112,16 +126,10 @@ public class FFTActivity extends JFrame{
     }
 
     public void writeCSV() throws IOException {
-        //CSVWriter writer=new CSVWriter(new FileWriter("C:/Users/battl/PycharmProjects/SpeechRec/data.csv"),char "'");
         CSVWriter writer =new CSVWriter(new FileWriter("E:/ObjFreqReq/Data/data.csv"),',',CSVWriter.NO_QUOTE_CHARACTER,CSVWriter.NO_ESCAPE_CHARACTER,CSVWriter.RFC4180_LINE_END);
         File folder = new File("E:/ObjFreqReq/TrainingSounds");
         File[] listOfFiles=folder.listFiles();
 
-        //String[] stringcsv=new String[2206];
-        //stringcsv[2205]="label";
-        //for(int i=0;i<stringcsv.length-1;i++)
-        //       stringcsv[i]="value"+i;
-        //writer.writeNext(stringcsv);
       try {
           Collection files = FileUtils.listFiles(folder, new String[]{"wav"}, true);
 
@@ -138,11 +146,6 @@ public class FFTActivity extends JFrame{
       }catch(Exception e){
           e.printStackTrace();
       }
-
-
-
-
-        //System.out.println(files);
         writer.close();
     }
 
@@ -174,11 +177,26 @@ public class FFTActivity extends JFrame{
             }
             System.out.println("Correct Predictions : "+correct+ "     Wrong Preddictions: " +wrong);
         Map<Object, PerformanceMeasure> pm = EvaluateDataset.testDataset(knn,dataForClassification);
-        for(Object o : pm.keySet())
-            System.out.println(o + ":  " + pm.get(o).getAccuracy());
-            Format1.setText(String.valueOf(correct));
-            Format2.setText(String.valueOf(wrong));
+        String accuracy="";
+        for(Object o : pm.keySet()) {
+            System.out.println("ACCURACY for "+ o +" class is : " + pm.get(o).getAccuracy());
+        }
+            System.out.println();
 
+        for(Object o : pm.keySet()) {
+            System.out.println("F-SCORE for "+ o +" class is : " +  pm.get(o).getFMeasure());
+        }
+
+            System.out.println();
+
+        for(Object o : pm.keySet()) {
+            System.out.println("RECALL for "+ o +" class is : " +  pm.get(o).getRecall());
+        }
+            System.out.println(accuracy);
+
+            Format1.setText("Correct Predictions : " + correct);
+            Format2.setText("Wrong Predictions : "+ wrong);
+            Format4.setText("Accuracy : " + (double) correct/(correct+wrong)*100 + "%");
         }
 
 
