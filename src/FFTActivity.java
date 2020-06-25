@@ -171,9 +171,10 @@ public class FFTActivity extends JFrame{
                  Object realClassValue = inst.classValue();
                 if(predictedClassValue.equals(realClassValue))
                      correct++;
-               else
-                   wrong++;
-
+               else {
+                    wrong++;
+                    System.out.println("EXPECTED: " + realClassValue + "  RECEIVED:  " + predictedClassValue);
+                }
             }
             System.out.println("Correct Predictions : "+correct+ "     Wrong Preddictions: " +wrong);
         Map<Object, PerformanceMeasure> pm = EvaluateDataset.testDataset(knn,dataForClassification);

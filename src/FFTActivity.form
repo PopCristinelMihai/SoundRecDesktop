@@ -59,17 +59,6 @@
           <verticalTextPosition value="3"/>
         </properties>
       </component>
-      <component id="84496" class="javax.swing.JButton" binding="button1" default-binding="true">
-        <constraints>
-          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="78" height="124"/>
-            <maximum-size width="210" height="124"/>
-          </grid>
-        </constraints>
-        <properties>
-          <text value="Generate Data Set"/>
-        </properties>
-      </component>
       <component id="7d5aa" class="javax.swing.JLabel" binding="Format4">
         <constraints>
           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
@@ -103,6 +92,17 @@
         <clientProperties>
           <html.disable class="java.lang.Boolean" value="false"/>
         </clientProperties>
+      </component>
+      <component id="84496" class="javax.swing.JButton" binding="button1" default-binding="true">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="78" height="124"/>
+            <maximum-size width="210" height="124"/>
+          </grid>
+        </constraints>
+        <properties>
+          <text value="Generate Data Set"/>
+        </properties>
       </component>
     </children>
   </grid>
