@@ -33,6 +33,7 @@ public class FFTActivity extends JFrame{
     private JLabel Format3;
     private JLabel Format4;
     private JLabel Format5;
+    private JButton buttonTesting;
 
 
     private FFTActivity(String title){
@@ -63,7 +64,25 @@ public class FFTActivity extends JFrame{
 
             }
         });
+        buttonTesting.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
 
+                try {
+                    writeTestCSV();
+                    Format3.setEnabled(true);
+                    Format3.setText("Testing set has been generated");
+                    Format3.setVisible(true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+
+
+
+            }
+        });
 
         button2.addActionListener(new ActionListener() {
             @Override
@@ -149,16 +168,40 @@ public class FFTActivity extends JFrame{
         writer.close();
     }
 
+    public void writeTestCSV() throws IOException {
+        CSVWriter writer =new CSVWriter(new FileWriter("E:/ObjFreqReq/Data/test_data.csv"),',',CSVWriter.NO_QUOTE_CHARACTER,CSVWriter.NO_ESCAPE_CHARACTER,CSVWriter.RFC4180_LINE_END);
+        File folder = new File("E:/ObjFreqReq/TestingSounds");
+        File[] listOfFiles=folder.listFiles();
+
+        try {
+            Collection files = FileUtils.listFiles(folder, new String[]{"wav"}, true);
+
+            for (Iterator iterator = files.iterator(); iterator.hasNext(); ) {
+                File file = (File) iterator.next();
+                System.out.println(file.getAbsolutePath());
+
+                double[] showarray = FFTQ(file.getAbsolutePath());
+
+                String[] strarr = new String[]{(Arrays.toString(showarray)).replaceAll("[^0-9.,]+",""),(file.getName()).replaceAll("[^A-Z]","")};
+                writer.writeNext(strarr);
+                //writer.writeNext(new String[]{file.getName()});
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        writer.close();
+    }
+
 
 
     public void trainModel(String filepath) throws IOException {
         Dataset data = FileHandler.loadDataset(new File(filepath), 2205, ",");
-        Dataset dataForClassification = FileHandler.loadDataset(new File(filepath),2205, ",");
+        Dataset dataForClassification = FileHandler.loadDataset(new File("E:/ObjFreqReq/Data/test_data.csv"),2205, ",");
 
 
         int correct = 0, wrong = 0;
 
-        Classifier knn = new KNearestNeighbors(3);
+        Classifier knn = new KNearestNeighbors(1);
         knn.buildClassifier(data);
 
 
